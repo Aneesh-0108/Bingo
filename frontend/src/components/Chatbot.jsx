@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import Messages from './Messages';
 
+
 const Chatbot = () => {
     const [messages, setMessages] = useState([
         { id: 1, sender: 'bot', text: 'Hello!  How can I help you today?' },
     ]);
     const [inputValue, setInputValue] = useState('');
 
-    const handleSend = () => {
+    const handleSend = async () => {
         if (inputValue.trim() === '') return;
 
         // Add user message
@@ -18,17 +19,43 @@ const Chatbot = () => {
         };
         setMessages([...messages, userMessage]);
 
-        // Simulate bot response
-        setTimeout(() => {
+        const userInput = inputValue;
+
+        setInputValue('');
+
+        try {
+
+            const response = await fetch('http://localhost:5000/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ message: userInput }),
+            });
+
+            const data = await response.json();
+
             const botMessage = {
                 id: messages.length + 2,
                 sender: 'bot',
-                text: 'Thanks for your message! This is a simulated response.',
-            };
-            setMessages((prev) => [...prev, botMessage]);
-        }, 1000);
+                text: data.reply,
+            }
 
-        setInputValue('');
+            setMessages((prevMessages) => [...prevMessages, botMessage]);
+
+        }
+
+        catch (error) {
+            console.error('Error communicating with backend:', error);
+
+            const errorMessage = {
+                id: messages.length + 2,
+                sender: 'bot',
+                text: 'Sorry, I could not connect to the server. Please try again!'
+            }
+
+            setMessages((prevMessages) => [...prevMessages, errorMessage])
+        }
     };
 
     const handleKeyPress = (e) => {

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bingo API Test</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; background: #1a1a1a; color: #fff; }
+        .box { background: #2d2d2d; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        h2 { margin-top: 0; color: #4facfe; }
+        button { background: #4facfe; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 14px; }
+        button:hover { background: #00f2fe; }
+        pre { background: #000; padding: 10px; border-radius: 4px; overflow-x: auto; color: #0f0; font-family: 'Consolas', monospace; }
+        .status-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .status-ai { background: #9b59b6; color: white; }
+        .status-rule { background: #2ecc71; color: white; }
+        .status-error { background: #e74c3c; color: white; }
+    </style>
+</head>
+<body>
+    <h1>Bingo API Verification</h1>
+    
+    <div class="box">
+        <h2>Reflect / Safe Intent</h2>
+        <p>Message: "Hi"</p>
+        <button onclick="test('Hi', 'safe-output')">Send "Hi"</button>
+        <div id="safe-output"></div>
+    </div>
+
+    <div class="box">
+        <h2>Gemini / Unknown Intent</h2>
+        <p>Message: "Explain quantum entanglement in one sentence"</p>
+        <button onclick="test('Explain quantum entanglement in one sentence', 'ai-output')">Send AI Quest</button>
+        <div id="ai-output"></div>
+    </div>
+
+    <script>
+        async function test(msg, outputId) {
+            const div = document.getElementById(outputId);
+            div.innerHTML = '<p>Sending...</p>';
+            
+            try {
+                const res = await fetch('http://localhost:5000/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: msg })
+                });
+                const data = await res.json();
+                
+                let sourceBadge = '';
+                if (data.metadata?.responseSource === 'ai') {
+                    sourceBadge = '<span class="status-badge status-ai">GEMINI AI</span>';
+                } else if (data.metadata?.responseSource === 'knowledge_base') {
+                     sourceBadge = '<span class="status-badge status-rule">RULE BASED</span>';
+                } else {
+                     sourceBadge = '<span class="status-badge status-error">ERROR/OTHER</span>';
+                }
+
+                div.innerHTML = `
+                    <h3>Response ${sourceBadge}</h3>
+                    <p><strong>Reply:</strong> ${data.reply}</p>
+                    <details>
+                        <summary>Full JSON Response</summary>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </details>
+                `;
+            } catch (e) {
+                div.innerHTML = `<p style="color:red">Error: ${e.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

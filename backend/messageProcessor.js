@@ -28,22 +28,22 @@ async function processMessage(message, knowledgeBase) {
   try {
     // Stage 1: Preprocessing
     const preprocessed = preprocess(message);
-    
+
     // Stage 2: Intent Detection
-    const detection = detectIntent(preprocessed. processed, knowledgeBase);
-    
+    const detection = detectIntent(preprocessed.processed, knowledgeBase);
+
     // Stage 3: Intent Routing
     const routing = routeIntent(detection);
-    
+
     // Stage 4: Response Generation
     const response = await generateResponse(routing, knowledgeBase, message);
-    
+
     return response;
-    
+
   } catch (error) {
     // Error handling - return safe fallback
     console.error('[MessageProcessor] Error:', error.message);
-    
+
     return {
       reply: 'I encountered an issue processing your request. A human agent will assist you shortly.',
       escalated: true,

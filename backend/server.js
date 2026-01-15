@@ -20,6 +20,16 @@
  * - Complete explainability at every step
  * - Future-ready for AI integration
  */
+// DEBUG HANDLERS
+process.on('uncaughtException', (err) => {
+    console.error('CRITICAL ERROR (Uncaught Exception):', err);
+});
+process.on('unhandledRejection', (reason, p) => {
+    console.error('CRITICAL ERROR (Unhandled Rejection):', reason);
+});
+
+console.log('Starting server...');
+
 require('dotenv').config();
 
 const API_KEY = process.env.GEMINI_API_KEY;
@@ -34,10 +44,10 @@ const cors = require('cors');
 const fs = require('fs');
 
 // Import our custom modules (Phase 5 architecture)
-const preprocess = require('./utils/preprocess');
-const detectIntent = require('./services/intentDetector');
-const routeIntent = require('./services/intentRouter');
-const generateResponse = require('./services/responseGenerator');
+// Import our custom modules (Phase 5 architecture)
+// REFACTORED: Logic delegated to messageProcessor
+const messageProcessor = require('./messageProcessor');
+const intentRouter = require('./services/intentRouter');
 
 // ============================================
 // LOAD KNOWLEDGE BASE
@@ -92,59 +102,17 @@ app.post('/chat', async (req, res) => {
     console.log('User:', userMessage);
 
     try {
+        // ==========================================
+        // DELEGATE TO LOGIC LAYER
+        // ==========================================
+        // We use messageProcessor.js effectively as the "Controller" 
+        // that coordinates the 4-stage pipeline.
+
+        console.log('[Server] Delegating to messageProcessor...');
+        const response = await messageProcessor.processMessage(userMessage, knowledgeBase);
 
         // ==========================================
-        // STAGE 1: PREPROCESSING
-        // ==========================================
-        console.log('\n[STAGE 1: PREPROCESSING]');
-
-        const preprocessed = preprocess(userMessage);
-
-        console.log('  Original:', preprocessed.original);
-        console.log('  Processed:', preprocessed.processed);
-
-        // ==========================================
-        // STAGE 2: INTENT DETECTION
-        // ==========================================
-        console.log('\n[STAGE 2: INTENT DETECTION]');
-
-        const detection = detectIntent(preprocessed.processed, knowledgeBase);
-
-        console.log('  Detected Intent:', detection.intent);
-        console.log('  Confidence:', (detection.confidence * 100).toFixed(0) + '%');
-        console.log('  Matched Patterns:', detection.matchedPatterns.join(', ') || 'none');
-
-        // Show all scores for debugging
-        console.log('  All Scores: ');
-        for (const [intent, score] of Object.entries(detection.allScores)) {
-            console.log(`    - ${intent}: ${(score * 100).toFixed(0)}%`);
-        }
-
-        // ==========================================
-        // STAGE 3: INTENT ROUTING
-        // ==========================================
-        console.log('\n[STAGE 3: INTENT ROUTING]');
-
-        const routing = routeIntent(detection);
-
-        console.log('  Confidence Level:', routing.confidenceLevel);
-        console.log('  Is Safe Intent:', routing.isSafeIntent);
-        console.log('  Strategy:', routing.strategy);
-        console.log('  Should Use AI:', routing.shouldUseAI);
-
-        // ==========================================
-        // STAGE 4: RESPONSE GENERATION
-        // ==========================================
-        console.log('\n[STAGE 4: RESPONSE GENERATION]');
-
-        // STAGE 4: Response Generation (now async)
-        const response = await generateResponse(routing, knowledgeBase, userMessage);
-
-        console.log('  Reply:', response.reply.substring(0, 60) + (response.reply.length > 60 ? '...' : ''));
-        console.log('  Response Source:', response.metadata.responseSource);
-
-        // ==========================================
-        // STAGE 5: RETURN RESPONSE
+        // RETURN RESPONSE
         // ==========================================
         console.log('\n[RESPONSE SENT]');
         console.log('  Status:  200 OK');
@@ -154,19 +122,12 @@ app.post('/chat', async (req, res) => {
         res.status(200).json(response);
 
     } catch (error) {
-        // ==========================================
-        // ERROR HANDLING
-        // ==========================================
-        console.error('\n❌ ERROR in processing: ');
+        // ... (Error handling remains the same)
+        console.error('\n❌ ERROR in request handling: ');
         console.error('  Message:', error.message);
-        console.error('  Stack:', error.stack);
-        console.log('========================================\n');
-
-        // Send error response
         res.status(500).json({
             error: 'Internal server error',
-            message: 'An error occurred while processing your message',
-            timestamp: new Date().toISOString()
+            message: 'An error occurred while processing your message'
         });
     }
 });
@@ -214,7 +175,7 @@ app.listen(PORT, () => {
     console.log('  GET  /          - API info');
     console.log('\nKnowledge Base:');
     console.log('  Intents:', knowledgeBase.intents.length);
-    console.log('  Safe Intents:', routeIntent.SAFE_INTENTS.join(', '));
+    console.log('  Safe Intents:', intentRouter.SAFE_INTENTS.join(', '));
     console.log('\nStatus: ✓ Ready to receive messages');
     console.log('========================================\n');
 })

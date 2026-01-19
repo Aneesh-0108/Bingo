@@ -13,3 +13,12 @@ node_modules/
 
 # Test
 test-env.js
+
+
+# Debug / experiment files
+check_models.js
+verify_key.js
+debug.js
+models.txt
+models_clean.txt
+hf_debug_clean.txt

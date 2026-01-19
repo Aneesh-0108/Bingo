@@ -1,0 +1,15 @@
+﻿# Environment variables
+.env
+.env.local
+
+# Dependencies
+node_modules/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+
+# Test
+test-env.js

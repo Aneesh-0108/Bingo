@@ -1,0 +1,67 @@
+{
+  "intents": [
+    {
+      "intent": "greeting",
+      "patterns": [
+        "hello",
+        "hi",
+        "hey",
+        "good morning",
+        "good afternoon"
+      ],
+      "responses": [
+        "Hello! I'm Bingo.  How can I help you? ",
+        "Hi there! What would you like to know? ",
+        "Hey! I'm here to assist you."
+      ]
+    },
+    {
+      "intent": "bot_identity",
+      "patterns": [
+        "who are you",
+        "what is your name",
+        "your name",
+        "what are you"
+      ],
+      "responses": [
+        "I am Bingo, a rule-based chatbot built to help answer your questions! ",
+        "My name is Bingo. I'm here to assist you with information."
+      ]
+    },
+    {
+      "intent": "bot_purpose",
+      "patterns": [
+        "what can you do",
+        "how can you help",
+        "your purpose",
+        "what do you do"
+      ],
+      "responses": [
+        "I can answer questions based on my knowledge base.  Try asking me about myself or saying hello!",
+        "I'm designed to provide helpful responses using rule-based logic.  Ask me anything!"
+      ]
+    },
+    {
+      "intent": "farewell",
+      "patterns": [
+        "bye",
+        "goodbye",
+        "see you",
+        "later",
+        "exit"
+      ],
+      "responses": [
+        "Goodbye! Feel free to come back anytime.",
+        "See you later! ",
+        "Bye! Have a great day!"
+      ]
+    }
+  ],
+  "fallback": {
+    "responses": [
+      "I'm not sure I understand. Could you rephrase that? ",
+      "Hmm, I don't have an answer for that. Try asking something else!",
+      "I'm still learning!  Can you ask in a different way?"
+    ]
+  }
+}

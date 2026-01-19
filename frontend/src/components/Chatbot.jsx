@@ -3,6 +3,7 @@ import Messages from './Messages';
 
 
 const Chatbot = () => {
+    
     const [messages, setMessages] = useState([
         { id: 1, sender: 'bot', text: 'Hello!  How can I help you today?' },
     ]);
@@ -23,9 +24,11 @@ const Chatbot = () => {
 
         setInputValue('');
 
+        const API_URL = import.meta.env.VITE_API_URL;
+
         try {
 
-            const response = await fetch('http://localhost:5000/chat', {
+            const response = await fetch(`${API_URL}/chat`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

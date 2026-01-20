@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import Messages from './Messages';
 
-
 const Chatbot = () => {
     
     const [messages, setMessages] = useState([
@@ -21,13 +20,31 @@ const Chatbot = () => {
         setMessages([...messages, userMessage]);
 
         const userInput = inputValue;
-
         setInputValue('');
 
+        // 🔧 FIX #1: Read API URL safely
         const API_URL = import.meta.env.VITE_API_URL;
 
-        try {
+        // 🔧 FIX #2: Validate API_URL before fetch
+        if (!API_URL) {
+            console.error('❌ VITE_API_URL is not defined');
 
+            setMessages((prevMessages) => [
+                ...prevMessages,
+                {
+                    id: prevMessages.length + 1,
+                    sender: 'bot',
+                    text: 'Configuration error: API URL not set. Please contact the developer.',
+                },
+            ]);
+
+            return; // 🔧 FIX #3: Stop execution safely
+        }
+
+        // 🔧 FIX #4: Debug log (remove later if needed)
+        console.log('API URL:', API_URL);
+
+        try {
             const response = await fetch(`${API_URL}/chat`, {
                 method: 'POST',
                 headers: {
@@ -42,22 +59,20 @@ const Chatbot = () => {
                 id: messages.length + 2,
                 sender: 'bot',
                 text: data.reply,
-            }
+            };
 
             setMessages((prevMessages) => [...prevMessages, botMessage]);
 
-        }
-
-        catch (error) {
+        } catch (error) {
             console.error('Error communicating with backend:', error);
 
             const errorMessage = {
                 id: messages.length + 2,
                 sender: 'bot',
-                text: 'Sorry, I could not connect to the server. Please try again!'
-            }
+                text: 'Sorry, I could not connect to the server. Please try again!',
+            };
 
-            setMessages((prevMessages) => [...prevMessages, errorMessage])
+            setMessages((prevMessages) => [...prevMessages, errorMessage]);
         }
     };
 
@@ -104,7 +119,11 @@ const Chatbot = () => {
                 }}
             >
                 {messages.map((message) => (
-                    <Messages key={message.id} sender={message.sender} text={message.text} />
+                    <Messages
+                        key={message.id}
+                        sender={message.sender}
+                        text={message.text}
+                    />
                 ))}
             </div>
 
